@@ -1,0 +1,217 @@
+local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
+local itemList = require(game.ReplicatedStorage.Client.ItemList)
+local CSEvents = game:GetService("ReplicatedStorage"):WaitForChild("_CS.Events")
+local alwaysHeadShot = false
+local shotMultiAmmount = 1
+local shotMulti = false
+local camera = game.Workspace.CurrentCamera
+local UIS = game:GetService("UserInputService")
+local mouse = game.Players.LocalPlayer:GetMouse()
+ 
+ 
+local Window = Rayfield:CreateWindow({
+	Name = "Anomic SS",
+	LoadingTitle = "Hell's Scripts",
+	LoadingSubtitle = "joe mama",
+	ConfigurationSaving = {
+		Enabled = true,
+		FolderName = nil, -- Create a custom folder for your hub/game
+		FileName = "Hell's Scripts"
+	},
+	Discord = {
+		Enabled = true,
+		Invite = "uJ5pD5c9", -- The Discord invite code, do not include discord.gg/. E.g. discord.gg/ABCD would be ABCD
+		RememberJoins = true -- Set this to false to make them join the discord every time they load it up
+	},
+	KeySystem = true, -- Set this to true to use our key system
+	KeySettings = {
+		Title = "Anomic SS",
+		Subtitle = "Key System",
+		Note = "If you get kicked while using the script with a message that says 'Error Detected' then please do not exit out of roblox and go to the Developer Console and report the error to the discord server.",
+		FileName = "Key", -- It is recommended to use something unique as other scripts using Rayfield may overwrite your key file
+		SaveKey = true, -- The user's key will be saved, but if you change the key, they will be unable to use your script
+		GrabKeyFromSite = false, -- If this is true, set Key below to the RAW site you would like Rayfield to get the key from
+		Key = {"0BJla"} -- List of keys that will be accepted by the system, can be RAW file links (pastebin, github etc) or simple strings ("hello","key22")
+	}
+})
+ 
+ 
+local MainTab = Window:CreateTab("LocalPlayer", nil) -- Title, Image
+local MainSection = MainTab:CreateSection("Main")
+ 
+local CombatTab = Window:CreateTab("Combat", nil) -- Title, Image
+local CombatSection = MainTab:CreateSection("Combat")
+ 
+Rayfield:Notify({
+	Title = "Anomic SS",
+	Content = "Notification Content",
+	Duration = 6.5,
+	Image = nil,
+	Actions = { -- Notification Buttons
+		Ignore = {
+			Name = "ok",
+			Callback = function()
+				print("The user tapped Okay!")
+			end
+		},
+	},
+})
+ 
+ 
+local Button = CombatTab:CreateButton({
+	Name = "Massively Increased Gun Strength ( why is this button name so long )",
+	Callback = function()
+		loadstring(game:HttpGet(("https://raw.githubusercontent.com/YourLocalAnomicPlayer/OneShot-Public/main/Script"), true))()
+	end,
+})
+ 
+ 
+local RunService = game:GetService("RunService")
+local target = false
+ 
+local Toggle = CombatTab:CreateToggle({
+	Name = "Aimbot",
+	CurrentValue = false,
+	Flag = "aimbot", -- A flag is the identifier for the configuration file, make sure every element has a different flag if you're using configuration saving to ensure no overlaps
+	Callback = function(Value)
+		local features = {
+			silentaim = true;
+			fov = 500;
+		}
+ 
+		local function getnearest()
+			local nearestmagnitude = math.huge
+			local nearestenemy = nil
+			local vector = nil
+			for i,v in next, game.Players:GetChildren() do
+				if v ~= game.Players.LocalPlayer then
+					if v.Character and  v.Character:FindFirstChild("HumanoidRootPart") and v.Character:FindFirstChild("Humanoid") and v.Character.Humanoid.Health > 0 then
+						local vector, onScreen = camera:WorldToScreenPoint(v.Character["HumanoidRootPart"].Position)
+						if onScreen then
+							local ray = Ray.new(
+								camera.CFrame.p,
+								(v.Character["Head"].Position-camera.CFrame.p).unit*500
+							)
+							local ignore = {
+								game.Players.LocalPlayer.Character,
+							}
+							local hit,position,normal=workspace:FindPartOnRayWithIgnoreList(ray,ignore)
+							if hit and hit:FindFirstAncestorOfClass("Model") and game.Players:FindFirstChild(hit:FindFirstAncestorOfClass("Model").Name)then
+								local magnitude = (Vector2.new(mouse.X, mouse.Y) - Vector2.new(vector.X, vector.Y)).magnitude
+								if magnitude < nearestmagnitude and magnitude <= features["fov"] then
+									nearestenemy = v
+									nearestmagnitude = magnitude
+								end
+							end
+						end
+					end
+				end
+			end
+			return nearestenemy
+		end
+ 
+ 
+		local meta = getrawmetatable(game)
+		setreadonly(meta, false)
+		local oldNamecall = meta.__namecall
+		meta.__namecall = newcclosure(function(...)
+			local method = getnamecallmethod()
+			local args = {...}
+			if string.find(method,'Ray') then
+				if target then
+					args[2] = Ray.new(workspace.CurrentCamera.CFrame.Position, (target + Vector3.new(0,(workspace.CurrentCamera.CFrame.Position-target).Magnitude/500,0) - workspace.CurrentCamera.CFrame.Position).unit * 500)
+				end
+			end
+			return oldNamecall(unpack(args))
+		end)
+ 
+ 
+		RunService:BindToRenderStep("silentaim",1,function()
+			if UIS:IsMouseButtonPressed(0) and features["silentaim"] and game.Players.LocalPlayer.Character and game.Players.LocalPlayer.Character:FindFirstChild("Humanoid") and game.Players.LocalPlayer.Character.Humanoid.Health > 0 then
+				local enemy = getnearest()
+				if enemy and enemy.Character and enemy.Character:FindFirstChild("Humanoid") and enemy.Character.Humanoid.Health > 0 then                
+					local vector, onScreen = camera:WorldToScreenPoint(enemy.Character["Head"].Position)
+					local magnitude = (Vector2.new(mouse.X, mouse.Y) - Vector2.new(vector.X, vector.Y)).magnitude
+					target = workspace[enemy.Name]["Head"].Position
+				end
+			else
+				target = nil
+			end
+		end)
+	end,
+})
+ 
+ 
+local aiming = false
+ 
+local Toggle = CombatTab:CreateToggle({
+	Name = "Fast Shotgun",
+	CurrentValue = false,
+	Flag = "goboomshotgun", -- A flag is the identifier for the configuration file, make sure every element has a different flag if you're using configuration saving to ensure no overlaps
+	Callback = function(Value)
+		for i, v in pairs(itemList) do
+			if v.DataType == "RangedWeapon" and v.Firemode == "Shot" then                         
+				v.ReloadTime = 0.01                       
+			end 
+		end    
+ 
+	end,
+})
+ 
+local Toggle = CombatTab:CreateToggle({
+	Name = "Shotgun Multiplier",
+	CurrentValue = false,
+	Flag = "goeverywhereshotgun", -- A flag is the identifier for the configuration file, make sure every element has a different flag if you're using configuration saving to ensure no overlaps
+	Callback = function(Value)
+		shotMulti = Value
+	end,
+})
+ 
+local Slider = MainTab:CreateSlider({
+	Name = "Shot Amount",
+	Range = {0, 250},
+	Increment = 1,
+	Suffix = "Shot Amount",
+	CurrentValue = 1,
+	Flag = "shotamount", -- A flag is the identifier for the configuration file, make sure every element has a different flag if you're using configuration saving to ensure no overlaps
+	Callback = function(Value)
+		shotMultiAmmount = (Value)
+	end,
+})
+ 
+UIS.InputBegan:Connect(function(a)
+	if a.UserInputType == Enum.UserInputType.MouseButton1 and shotMulti then
+		for i,v in pairs(game.Players.LocalPlayer.Character:GetChildren()) do
+			if v:IsA("Tool") and v.Name == "Bullpup Shotgun" or v.Name == "Shotgun" or v.Name == "Riot Shotgun" or v.Name == "Sawed Off" then            
+				for i = shotMultiAmmount, 0, -1 do            
+					v.MainGunScript.FireEvent:Fire(mouse)               
+				end
+			end
+		end 
+	end
+end)
+ 
+local Slider = MainTab:CreateSlider({
+	Name = "WalkSpeed",
+	Range = {0, 250},
+	Increment = 1,
+	Suffix = "Speed",
+	CurrentValue = 16,
+	Flag = "walk", -- A flag is the identifier for the configuration file, make sure every element has a different flag if you're using configuration saving to ensure no overlaps
+	Callback = function(Value)
+		game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = (Value)
+	end,
+})
+ 
+ 
+local Slider = MainTab:CreateSlider({
+	Name = "JumpPower",
+	Range = {0, 500},
+	Increment = 1,
+	Suffix = "Jump",
+	CurrentValue = 16,
+	Flag = "jump", -- A flag is the identifier for the configuration file, make sure every element has a different flag if you're using configuration saving to ensure no overlaps
+	Callback = function(Value)
+		game.Players.LocalPlayer.Character.Humanoid.JumpPower = (Value)
+	end,
+})
