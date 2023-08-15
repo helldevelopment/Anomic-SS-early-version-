@@ -167,7 +167,7 @@ local Toggle = CombatTab:CreateToggle({
 	end,
 })
  
-local Slider = MainTab:CreateSlider({
+local Slider = CombatTab:CreateSlider({
 	Name = "Shot Amount",
 	Range = {0, 250},
 	Increment = 1,
