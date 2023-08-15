@@ -59,7 +59,7 @@ Rayfield:Notify({
  
  
 local Button = CombatTab:CreateButton({
-	Name = "Massively Increased Gun Strength ( why is this button name so long )",
+	Name = "Massively Increased Gun Force ( why is this button name so long )",
 	Callback = function()
 		loadstring(game:HttpGet(("https://raw.githubusercontent.com/YourLocalAnomicPlayer/OneShot-Public/main/Script"), true))()
 	end,
